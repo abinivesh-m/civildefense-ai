@@ -3,113 +3,316 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CivilDefense AI — Resurrecting the Emergency Broadcast System</title>
-  <meta name="description" content="AI-powered emergency broadcast system — resurrecting civil defense sirens." />
-  <link rel="stylesheet" href="/static/style.css" />
+  <title>CivilDefense AI — Emergency Broadcast System</title>
+  <meta name="description" content="AI-powered 3D emergency broadcast system — resurrecting civil defense sirens." />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #e0e0e8;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    #canvas-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+    .overlay {
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .overlay.interactive { pointer-events: auto; }
+    .topbar {
+      top: 0; left: 0; right: 0;
+      background: linear-gradient(180deg, rgba(10,10,15,0.95), rgba(10,10,15,0.7));
+      border-bottom: 1px solid rgba(255,51,51,0.3);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .siren-icon {
+      width: 36px; height: 36px;
+      color: #ff3333;
+      animation: spin 2s linear infinite;
+      filter: drop-shadow(0 0 8px #ff3333);
+    }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .brand-name { font-size: 20px; font-weight: 700; color: #ff3333; letter-spacing: 3px; text-shadow: 0 0 10px #ff3333; }
+    .brand-sub { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 2px; }
+    .status-bar { display: flex; align-items: center; gap: 16px; }
+    .status-item { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 6px #00ff88; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .status-text { color: #00ff88; letter-spacing: 1px; }
+    .alert-count { color: #ff3333; font-weight: 700; }
+
+    .sidebar {
+      top: 70px; left: 16px; bottom: 16px;
+      width: 320px;
+      background: rgba(10,10,20,0.85);
+      border: 1px solid rgba(255,51,51,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(15px);
+      overflow-y: auto;
+      max-height: calc(100vh - 90px);
+    }
+    .sidebar h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #ff3333;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,51,51,0.2);
+      padding-bottom: 6px;
+    }
+    .threat-form { display: flex; flex-direction: column; gap: 10px; }
+    .threat-form select, .threat-form input, .threat-form textarea {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,51,51,0.2);
+      color: #e0e0e8;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      width: 100%;
+    }
+    .threat-form textarea { resize: vertical; min-height: 50px; }
+    .threat-form label { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; display: block; margin-bottom: 4px; }
+    .btn-submit {
+      background: linear-gradient(135deg, #ff3333, #cc0000);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      box-shadow: 0 0 15px rgba(255,51,51,0.3);
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 0 25px rgba(255,51,51,0.5); }
+    .severity-slider { display: flex; align-items: center; gap: 8px; }
+    .severity-slider input { flex: 1; }
+    .severity-val { font-size: 12px; font-weight: 700; color: #ff3333; min-width: 80px; text-align: right; }
+
+    .result-panel {
+      top: 70px; right: 16px;
+      width: 340px;
+      background: rgba(10,10,20,0.85);
+      border: 1px solid rgba(255,51,51,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      backdrop-filter: blur(15px);
+      max-height: calc(100vh - 90px);
+      overflow-y: auto;
+    }
+    .result-panel h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #ff3333; margin-bottom: 8px; border-bottom: 1px solid rgba(255,51,51,0.2); padding-bottom: 6px; }
+    .result-card {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,51,51,0.15);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .result-status { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .result-status.dispatched { color: #00ff88; text-shadow: 0 0 8px #00ff88; }
+    .result-status.refused { color: #ff3333; text-shadow: 0 0 8px #ff3333; }
+    .result-status.pending { color: #ffcc00; text-shadow: 0 0 8px #ffcc00; }
+    .result-detail { font-size: 11px; color: #888; margin-bottom: 8px; }
+    .result-channels { display: flex; gap: 6px; flex-wrap: wrap; }
+    .result-channels span { background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.3); padding: 2px 8px; border-radius: 4px; font-size: 9px; text-transform: uppercase; color: #ff3333; }
+    .pending-item { background: rgba(255,204,0,0.05); border: 1px solid rgba(255,204,0,0.3); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .pending-item h4 { color: #ffcc00; font-size: 12px; margin-bottom: 4px; }
+    .pending-item p { color: #888; font-size: 10px; margin-bottom: 8px; }
+    .pending-btns { display: flex; gap: 8px; }
+    .btn-approve { background: #00ff88; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 11px; }
+    .btn-deny { background: #ff3333; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-family: inherit; font-weight: 700; cursor: pointer; font-size: 11px; }
+
+    .audit-panel {
+      bottom: 16px; left: 16px;
+      width: 320px;
+      background: rgba(10,10,20,0.85);
+      border: 1px solid rgba(255,51,51,0.2);
+      border-radius: 12px;
+      padding: 12px;
+      backdrop-filter: blur(15px);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .audit-panel h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #ff3333; margin-bottom: 8px; }
+    .audit-entry { font-size: 9px; padding: 4px 8px; border-left: 2px solid #555; margin-bottom: 4px; border-radius: 0 4px 4px 0; background: rgba(0,0,0,0.3); }
+    .audit-entry.dispatch { border-left-color: #00ff88; }
+    .audit-entry.refuse { border-left-color: #ff3333; }
+    .audit-entry.pending { border-left-color: #ffcc00; }
+    .audit-time { color: #555; }
+    .audit-action { font-weight: 700; }
+    .audit-action.dispatch { color: #00ff88; }
+    .audit-action.refuse { color: #ff3333; }
+    .audit-action.pending { color: #ffcc00; }
+
+    .ticker {
+      bottom: 0; left: 0; right: 0;
+      background: rgba(10,10,15,0.9);
+      border-top: 1px solid rgba(255,51,51,0.2);
+      padding: 6px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      z-index: 5;
+    }
+    .ticker-content {
+      display: inline-block;
+      animation: ticker 30s linear infinite;
+      font-size: 10px;
+      color: #888;
+      letter-spacing: 1px;
+    }
+    @keyframes ticker { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+
+    .hud-info {
+      position: fixed;
+      bottom: 40px; right: 16px;
+      background: rgba(10,10,20,0.8);
+      border: 1px solid rgba(255,51,51,0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 9px;
+      color: #555;
+      z-index: 5;
+      backdrop-filter: blur(10px);
+    }
+    .hud-info span { color: #ff3333; }
+
+    .scanlines {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px);
+      pointer-events: none; z-index: 9999;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar, .result-panel, .audit-panel { display: none; }
+    }
+  </style>
 </head>
 <body>
   <div class="scanlines"></div>
+  <div id="canvas-container"></div>
 
-  <header class="topbar">
+  <!-- Topbar -->
+  <div class="overlay topbar">
     <div class="brand">
-      <svg class="siren" viewBox="0 0 40 40" aria-hidden="true">
+      <svg class="siren-icon" viewBox="0 0 40 40">
         <circle cx="20" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
         <path d="M20 4 L20 12 M20 28 L20 36 M4 20 L12 20 M28 20 L36 20" stroke="currentColor" stroke-width="2"/>
         <circle cx="20" cy="20" r="3" fill="currentColor"/>
       </svg>
       <div>
-        <span class="brand-name">CIVILDEFENSE AI</span>
-        <span class="brand-sub">Emergency Broadcast System — Revived</span>
+        <div class="brand-name">CIVILDEFENSE AI</div>
+        <div class="brand-sub">Emergency Broadcast System — Revived</div>
       </div>
     </div>
     <div class="status-bar">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">SYSTEM ONLINE</span>
+      <div class="status-item"><span class="status-dot"></span><span class="status-text">SYSTEM ONLINE</span></div>
+      <div class="status-item">ALERTS: <span class="alert-count" id="alert-count">0</span></div>
+      <div class="status-item">THREATS: <span id="threat-count" style="color:#ffcc00">0</span></div>
     </div>
-  </header>
+  </div>
 
-  <main class="container">
-    <!-- Channel Status -->
-    <section class="channels">
-      <h2>Alert Channels</h2>
-      <div class="channel-grid">
-        <div class="channel" id="ch-siren"><span class="ch-icon">🚨</span><span class="ch-name">Siren</span><span class="ch-status" id="st-siren">OFF</span></div>
-        <div class="channel" id="ch-sms"><span class="ch-icon">📱</span><span class="ch-name">SMS</span><span class="ch-status" id="st-sms">OFF</span></div>
-        <div class="channel" id="ch-push"><span class="ch-icon">🔔</span><span class="ch-name">Push</span><span class="ch-status" id="st-push">OFF</span></div>
-        <div class="channel" id="ch-radio"><span class="ch-icon">📻</span><span class="ch-name">Radio</span><span class="ch-status" id="st-radio">OFF</span></div>
-        <div class="channel" id="ch-social"><span class="ch-icon">📢</span><span class="ch-name">Social</span><span class="ch-status" id="st-social">OFF</span></div>
+  <!-- Sidebar: Threat Submission -->
+  <div class="overlay sidebar interactive">
+    <h3>⚠ Submit Threat Report</h3>
+    <form class="threat-form" id="threat-form">
+      <div>
+        <label>Source</label>
+        <select id="source">
+          <option value="weather">Weather API</option>
+          <option value="seismic">Seismic Sensor</option>
+          <option value="social">Social Media Monitor</option>
+          <option value="sensor">Sensor Network</option>
+          <option value="field_report">Field Report</option>
+        </select>
       </div>
-    </section>
-
-    <!-- Threat Submission -->
-    <section class="threat-form">
-      <h2>Submit Threat Report</h2>
-      <form id="threat-form">
-        <div class="form-row">
-          <label>Source</label>
-          <select id="source">
-            <option value="weather">Weather API</option>
-            <option value="seismic">Seismic Sensor</option>
-            <option value="social">Social Media Monitor</option>
-            <option value="sensor">Sensor Network</option>
-            <option value="field_report">Field Report</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Threat Type</label>
-          <select id="threat_type">
-            <option value="tornado">Tornado</option>
-            <option value="flood">Flash Flood</option>
-            <option value="earthquake">Earthquake</option>
-            <option value="fire">Wildfire</option>
-            <option value="chemical">Chemical Spill</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label>Severity (1-4)</label>
+      <div>
+        <label>Threat Type</label>
+        <select id="threat_type">
+          <option value="tornado">Tornado</option>
+          <option value="flood">Flash Flood</option>
+          <option value="earthquake">Earthquake</option>
+          <option value="fire">Wildfire</option>
+          <option value="chemical">Chemical Spill</option>
+        </select>
+      </div>
+      <div>
+        <label>Severity (1-4)</label>
+        <div class="severity-slider">
           <input type="range" id="severity" min="1" max="4" value="2" />
-          <span id="severity-label">2 — Warning</span>
+          <span class="severity-val" id="severity-label">2 — Warning</span>
         </div>
-        <div class="form-row">
-          <label>Confidence (0-1)</label>
+      </div>
+      <div>
+        <label>Confidence</label>
+        <div class="severity-slider">
           <input type="range" id="confidence" min="0" max="1" step="0.05" value="0.85" />
-          <span id="conf-label">0.85</span>
+          <span class="severity-val" id="conf-label">0.85</span>
         </div>
-        <div class="form-row">
-          <label>Location</label>
-          <input type="text" id="location" placeholder="e.g., Kottur, Coimbatore" value="Kottur, Coimbatore" />
-        </div>
-        <div class="form-row">
-          <label>Description</label>
-          <textarea id="description" rows="2" placeholder="Describe the threat...">Heavy rainfall causing flooding in low-lying areas</textarea>
-        </div>
-        <button type="submit" class="btn btn-alert">SUBMIT THREAT</button>
-      </form>
-    </section>
-
-    <!-- Result -->
-    <section class="result" id="result" hidden>
-      <h2>Alert Result</h2>
-      <div class="result-card" id="result-card"></div>
-    </section>
-
-    <!-- Pending Approvals -->
-    <section class="pending">
-      <h2>Pending Approvals</h2>
-      <div class="pending-list" id="pending-list">
-        <p class="empty">No pending approvals.</p>
       </div>
-    </section>
-
-    <!-- Audit Log -->
-    <section class="audit">
-      <h2>Audit Trail</h2>
-      <div class="audit-list" id="audit-list">
-        <p class="empty">No audit entries yet.</p>
+      <div>
+        <label>Location</label>
+        <input type="text" id="location" value="Kottur, Coimbatore" />
       </div>
-    </section>
-  </main>
+      <div>
+        <label>Description</label>
+        <textarea id="description">Heavy rainfall causing flooding in low-lying areas</textarea>
+      </div>
+      <button type="submit" class="btn-submit">⚠ SUBMIT THREAT</button>
+    </form>
+  </div>
 
+  <!-- Result Panel -->
+  <div class="overlay result-panel interactive">
+    <h3>Alert Result</h3>
+    <div id="result-area">
+      <p style="color:#555;font-size:11px;">No alerts yet. Submit a threat to begin.</p>
+    </div>
+    <h3 style="margin-top:16px;">Pending Approvals</h3>
+    <div id="pending-area">
+      <p style="color:#555;font-size:11px;">No pending approvals.</p>
+    </div>
+  </div>
+
+  <!-- Audit Panel -->
+  <div class="overlay audit-panel interactive">
+    <h3>📜 Audit Trail</h3>
+    <div id="audit-area">
+      <p style="color:#555;font-size:9px;">No entries yet.</p>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-content" id="ticker">
+      CIVILDEFENSE AI — RESURRECTING THE EMERGENCY BROADCAST SYSTEM • MONITORING 5 DATA SOURCES • THREAT CLASSIFICATION ACTIVE • CHANNEL ROUTING: SIREN/SMS/PUSH/RADIO/SOCIAL • HUMAN GATE: DEFAULT DENY • EVIDENCE: 5-CHECK VERIFIER • AUDIT: HASH-CHAINED LEDGER •
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud-info">
+    <div>Drag to rotate • Scroll to zoom • <span>Click</span> buildings for info</div>
+    <div>Threats: <span id="hud-threats">0</span> | Alerts: <span id="hud-alerts">0</span> | Audit: <span id="hud-audit">0</span></div>
+  </div>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>

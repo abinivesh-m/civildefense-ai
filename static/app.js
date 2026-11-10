@@ -2,8 +2,8 @@
 // Killer features: Disaster Scenario Player, Before/After comparison, Live metrics
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe8e8f0);
-scene.fog = new THREE.FogExp2(0xe8e8f0, 0.006);
+scene.background = new THREE.Color(0xdce0f0);
+scene.fog = new THREE.FogExp2(0xdce0f0, 0.005);
 
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 45, 70);
@@ -15,11 +15,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.5;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0x8888aa, 0.7);
+const ambientLight = new THREE.AmbientLight(0xaaaacc, 0.8);
 scene.add(ambientLight);
 const dirLight = new THREE.DirectionalLight(0xff4444, 0.7);
 dirLight.position.set(30, 50, 20);
@@ -32,12 +32,12 @@ rimLight.position.set(-30, 20, -20);
 scene.add(rimLight);
 
 // Ground
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(250, 250), new THREE.MeshStandardMaterial({ color: 0xd0d0e0, roughness: 0.9, metalness: 0.05 }));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(250, 250), new THREE.MeshStandardMaterial({ color: 0xc8cad8, roughness: 0.8, metalness: 0.05 }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
-const gridHelper = new THREE.GridHelper(250, 50, 0x8888aa, 0xccccdd);
-gridHelper.material.opacity = 0.4; gridHelper.material.transparent = true;
+const gridHelper = new THREE.GridHelper(250, 50, 0x9999bb, 0xbbbbdd);
+gridHelper.material.opacity = 0.6; gridHelper.material.transparent = true;
 scene.add(gridHelper);
 
 // Buildings
@@ -53,8 +53,8 @@ buildingPositions.forEach((pos) => {
   const w = 2 + Math.random() * 5;
   const d = 2 + Math.random() * 5;
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({
-    color: new THREE.Color().setHSL(0.6 + Math.random() * 0.1, 0.15, 0.7 + Math.random() * 0.15),
-    roughness: 0.7, metalness: 0.15, emissive: new THREE.Color(0xaaaacc), emissiveIntensity: 0.25
+    color: new THREE.Color().setHSL(0.6 + Math.random() * 0.1, 0.2, 0.75 + Math.random() * 0.15),
+    roughness: 0.7, metalness: 0.15, emissive: new THREE.Color(0xaaaacc), emissiveIntensity: 0.3
   }));
   mesh.position.set(pos.x, h / 2, pos.z);
   mesh.castShadow = true; mesh.receiveShadow = true;
@@ -63,7 +63,7 @@ buildingPositions.forEach((pos) => {
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     if (Math.random() > 0.55) continue;
     const win = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.9), new THREE.MeshBasicMaterial({
-      color: Math.random() > 0.3 ? 0xffdd66 : 0x66aaff, transparent: true, opacity: 0.7 + Math.random() * 0.3
+      color: Math.random() > 0.3 ? 0xffdd66 : 0x66aaff, transparent: true, opacity: 0.8 + Math.random() * 0.2
     }));
     win.position.set(pos.x - w/2 + 0.8 + c * 1.2, 1.5 + r * 2.5, pos.z + d/2 + 0.01);
     scene.add(win);
@@ -119,9 +119,9 @@ for (let i = 0; i < particleCount; i++) {
   particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 220;
   const t = Math.random();
   const c = new THREE.Color();
-  if (t < 0.3) c.setHSL(0, 0.8, 0.5);
-  else if (t < 0.6) c.setHSL(0.08, 0.9, 0.5);
-  else c.setHSL(0.6, 0.3, 0.4);
+  if (t < 0.3) c.setHSL(0, 0.9, 0.55);
+  else if (t < 0.6) c.setHSL(0.08, 0.95, 0.55);
+  else c.setHSL(0.6, 0.4, 0.5);
   particleColors[i * 3] = c.r; particleColors[i * 3 + 1] = c.g; particleColors[i * 3 + 2] = c.b;
 }
 particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));

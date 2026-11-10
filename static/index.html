@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivilDefense AI — Resurrecting the Emergency Broadcast System</title>
+  <meta name="description" content="AI-powered emergency broadcast system — resurrecting civil defense sirens." />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="siren" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M20 4 L20 12 M20 28 L20 36 M4 20 L12 20 M28 20 L36 20" stroke="currentColor" stroke-width="2"/>
+        <circle cx="20" cy="20" r="3" fill="currentColor"/>
+      </svg>
+      <div>
+        <span class="brand-name">CIVILDEFENSE AI</span>
+        <span class="brand-sub">Emergency Broadcast System — Revived</span>
+      </div>
+    </div>
+    <div class="status-bar">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">SYSTEM ONLINE</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Channel Status -->
+    <section class="channels">
+      <h2>Alert Channels</h2>
+      <div class="channel-grid">
+        <div class="channel" id="ch-siren"><span class="ch-icon">🚨</span><span class="ch-name">Siren</span><span class="ch-status" id="st-siren">OFF</span></div>
+        <div class="channel" id="ch-sms"><span class="ch-icon">📱</span><span class="ch-name">SMS</span><span class="ch-status" id="st-sms">OFF</span></div>
+        <div class="channel" id="ch-push"><span class="ch-icon">🔔</span><span class="ch-name">Push</span><span class="ch-status" id="st-push">OFF</span></div>
+        <div class="channel" id="ch-radio"><span class="ch-icon">📻</span><span class="ch-name">Radio</span><span class="ch-status" id="st-radio">OFF</span></div>
+        <div class="channel" id="ch-social"><span class="ch-icon">📢</span><span class="ch-name">Social</span><span class="ch-status" id="st-social">OFF</span></div>
+      </div>
+    </section>
+
+    <!-- Threat Submission -->
+    <section class="threat-form">
+      <h2>Submit Threat Report</h2>
+      <form id="threat-form">
+        <div class="form-row">
+          <label>Source</label>
+          <select id="source">
+            <option value="weather">Weather API</option>
+            <option value="seismic">Seismic Sensor</option>
+            <option value="social">Social Media Monitor</option>
+            <option value="sensor">Sensor Network</option>
+            <option value="field_report">Field Report</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Threat Type</label>
+          <select id="threat_type">
+            <option value="tornado">Tornado</option>
+            <option value="flood">Flash Flood</option>
+            <option value="earthquake">Earthquake</option>
+            <option value="fire">Wildfire</option>
+            <option value="chemical">Chemical Spill</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Severity (1-4)</label>
+          <input type="range" id="severity" min="1" max="4" value="2" />
+          <span id="severity-label">2 — Warning</span>
+        </div>
+        <div class="form-row">
+          <label>Confidence (0-1)</label>
+          <input type="range" id="confidence" min="0" max="1" step="0.05" value="0.85" />
+          <span id="conf-label">0.85</span>
+        </div>
+        <div class="form-row">
+          <label>Location</label>
+          <input type="text" id="location" placeholder="e.g., Kottur, Coimbatore" value="Kottur, Coimbatore" />
+        </div>
+        <div class="form-row">
+          <label>Description</label>
+          <textarea id="description" rows="2" placeholder="Describe the threat...">Heavy rainfall causing flooding in low-lying areas</textarea>
+        </div>
+        <button type="submit" class="btn btn-alert">SUBMIT THREAT</button>
+      </form>
+    </section>
+
+    <!-- Result -->
+    <section class="result" id="result" hidden>
+      <h2>Alert Result</h2>
+      <div class="result-card" id="result-card"></div>
+    </section>
+
+    <!-- Pending Approvals -->
+    <section class="pending">
+      <h2>Pending Approvals</h2>
+      <div class="pending-list" id="pending-list">
+        <p class="empty">No pending approvals.</p>
+      </div>
+    </section>
+
+    <!-- Audit Log -->
+    <section class="audit">
+      <h2>Audit Trail</h2>
+      <div class="audit-list" id="audit-list">
+        <p class="empty">No audit entries yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

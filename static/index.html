@@ -315,6 +315,8 @@
     /* Glow effects */
     .glow-red { text-shadow: 0 0 10px var(--red-glow); }
     .glow-green { text-shadow: 0 0 10px rgba(0,255,136,0.4); }
+    .scenario-entry { padding: 4px 0; border-bottom: 1px solid rgba(255,51,51,0.05); }
+    .scenario-entry:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
@@ -389,6 +391,17 @@
       </div>
       <button type="submit" class="btn-submit">⚠ SUBMIT THREAT</button>
     </form>
+
+    <h3 style="margin-top:20px;">🎬 Disaster Scenarios</h3>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn-submit" style="flex:1;font-size:11px;padding:10px;" onclick="runScenario('tornado')">🌪️ Tornado</button>
+      <button class="btn-submit" style="flex:1;font-size:11px;padding:10px;" onclick="runScenario('flood')">🌊 Flood</button>
+      <button class="btn-submit" style="flex:1;font-size:11px;padding:10px;" onclick="runScenario('earthquake')">🏔️ Quake</button>
+    </div>
+    <button class="btn-submit" style="background:linear-gradient(135deg,#555,#333);font-size:11px;padding:8px;" onclick="stopScenario()">⏹ Stop Scenario</button>
+    <div id="scenario-feed" style="margin-top:12px;max-height:200px;overflow-y:auto;font-size:10px;line-height:1.6;">
+      <p style="color:#555;">Click a scenario to simulate a real disaster.</p>
+    </div>
   </div>
 
   <!-- Result Panel -->
@@ -427,5 +440,6 @@
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="/static/app.js"></script>
+  <script src="/static/killer.js"></script>
 </body>
 </html>

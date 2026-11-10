@@ -49,9 +49,6 @@ const DISASTERS = {
   ]}
 };
 
-let scenarioRunning = false;
-let scenarioTimeouts = [];
-
 function runScenario(name) {
   if (scenarioRunning) return;
   scenarioRunning = true;
